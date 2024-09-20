@@ -2,12 +2,11 @@ FROM kalilinux/kali-rolling
 
 # Installing System Tools
 RUN apt update -y && apt upgrade -y && \
-		apt install curl wget nmap vim curl iputils-ping git tmux golang pipx -y && \
+		apt install curl wget nmap vim curl iputils-ping git golang pipx -y && \
 		apt clean -y
 
 RUN git clone https://github.com/tmux-plugins/tpm /root/.tmux/plugins/tpm
 
-COPY ./data/configs/tmux.conf /root/.tmux.conf
 COPY ./tools.sh /root/tools.sh
 RUN echo 'export PATH=$PATH:/root/go/bin:/root/.local/bin:/root/hrhost/data/bin' >> /root/.bashrc
 
