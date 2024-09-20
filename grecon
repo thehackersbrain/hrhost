@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# Color Codes
+GRN="\e[0;32m"
+RST="\e[0m"
+UDL="\e[4m"
+BLD="\e[1m"
+ITL="\e[3m"
+
+TOOLNAME=$(basename "$0")
+
+#-------------------- Files -------------------------
+TARGETFILE="wildcards.txt"
+OUTFILE_A="amass-initial-subdomains.txt"
+OUTFILE_SF="subfinder-initial-subdomains.txt"
+SUBDFILE="initial-subdomains.txt"
+PFILE="probed-subdomains.txt"
+WFILE="waybackurls-urls.txt"
+UUFILE="uniq-urls.txt"
+CRLFL="crawlfile.txt"
+JSFL="jsfile.txt"
+SRTFL="secrets/secret.txt"
+#---------------------------------------------------
+
+
+log_msg() {
+    local left_text="$1"
+    local right_text="$2"
+    local log_type="$3"
+    local width=$(tput cols)
+    local timestamp=$(date +'%Y-%m-%d %H:%M:%S')
+    local position=$((width - ${#right_text}))
+
+    case "$log_type" in
+      0) color_code='\e[4;32m' ;; # Green
+      1) color_code='\e[4;33m' ;; # Red
+      2) color_code='\e[4;31m' ;; # Yellow
+      *) color_code='\e[0;0m'  ;; # No color
+    esac
+
+    # Print timestamp and left text
+    echo -ne "\n[$timestamp] ${BLD}${GRN}$TOOLNAME${RST} - [${ITL}$left_text${RST}]"
+
+    # Move cursor to the rightmost side of the screen
+    echo -ne "\e[${position}G"
+
+    # Print right text at the rightmost side with underlining
+    echo -e "${UDL}${color_code}${right_text}${RST}\n"
+}
+
+
+subdomains() {
+    log_msg "Subfinder" "Enumeration Started" 1
+    log_msg "Amass" "Enumeration Started" 1
+
+    (subfinder -dL $TARGETFILE -all -recursive -v -o $OUTFILE_SF; log_msg "Subfinder" "Enumeration completed" 0) &
+    (amass enum -passive -df $TARGETFILE -o $OUTFILE_A; log_msg "Amass" "Enumeration completed" 0) &
+
+    wait %1
+    wait %2
+
+    # Getting subdomains from the output files
+    cat $OUTFILE_A | grep -i fqdn | cut -d " " -f1 | grep -f $TARGETFILE | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | anew $SUBDFILE
+    cat $OUTFILE_SF | grep -f $TARGETFILE | anew $SUBDFILE && log_msg "Anew (subfinder, amass)" "Initial Subdomains file created (`cat $SUBDFILE | wc -l`)" 0
+
+    log_msg "httpx" "Looking for live hosts" 1
+
+    cat $SUBDFILE | httpx -p 80,8080,8000,8888 -silent -o $PFILE && log_msg "httpx" "Live hosts file saved `cat $PFILE | wc -l`" 0 && notify -data $SUBDFILE -id subdomains -bulk
+
+    log_msg "naabu" "Looking for open ports" 1
+    naabu -list $SUBDFILE -c 50 -nmap-cli 'nmap -sV -sC' -o 'naabu-full.txt' | anew naabu-raw.txt && log_msg "naabu" "Port scan file saved" 0 && notify -bulk -data 'naabu-full.txt' -id ports
+
+    log_msg "Katana" "Crawling the domains list" 1
+
+    katana -list $SUBDFILE -d 5 -ps -pss waybackarchive,commoncrawl,alienvault -f qurl -jc -xhr -kf -fx -fs dn -ef woff,css,png,jpg,svg,woff2,jpeg,gif -o $CRLFL && log_msg "katana" "Crawl file saved." 0
+
+    log_msg "Katana" "Looking for any secrets" 1
+
+    cat $CRLFL | grep -E "\.js$|\.json" | sort -u > $JSFL
+
+    log_msg "Katana" "Looking for secrets completed" 0
+
+    log_msg "Waybackurls" "Looking for urls" 1
+
+    cat $PFILE | waybackurls | anew $WFILE && log_msg "Waybackurls" "Waybackurls urls saved" 0
+
+    log_msg "Uro" "Finding unique urls" 1
+
+    cat $WFILE $CRLFL | uro -o $UUFILE && log_msg "Uro" "Uniq urls saved" 0 && notify -bulk -data $UUFILE -id urls
+}
+
+
+recon() {
+    subdomains
+}
+
+
+help() {
+  echo -e "Usage: ${BLD}${GRN}$TOOLNAME${RST} <commands> <other-args>" >&2
+  echo -e "\t${BLD}${GRN}$TOOLNAME${RST} r       -> For performing recon on the domains"
+  exit 1
+}
+
+
+#------------------------Arguments------------------------------
+SUBCMD=$1
+case "$SUBCMD" in
+    "r")
+        recon
+        ;;
+    *)
+        help
+        ;;
+esac
+#---------------------------------------------------------------
