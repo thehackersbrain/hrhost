@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# SRC_URL=$1
+SRC_URL=$1
 
 hail_hrs() {
 	git clone https://github.com/thehackersbrain/hrhost.git
 	cd hrhost
 	# wget -O $SRC_URL
+	echo $0
 	docker build -t hrs .
 	docker run -it -v /home/thehackersbrain3/hrhost/recon:/root/recon hrs /bin/bash
 }

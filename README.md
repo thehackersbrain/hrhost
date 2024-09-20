@@ -4,7 +4,7 @@ A quick script to setup kali linux docker container for hacking and recon on Goo
 - Hail HRS
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/thehackersbrain/hrhost/refs/heads/main/setup.sh | bash -s -- <ngrok-url>
+curl -sSL https://raw.githubusercontent.com/thehackersbrain/hrhost/refs/heads/main/setup.sh | bash -s -- <ngrok-url> && docker run -it -v /home/thehackersbrain3/hrhost/recon:/root/recon hrs /bin/bash
 ```
 
 - Build and run the docker image
