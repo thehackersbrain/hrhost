@@ -1,6 +1,12 @@
 # HR Host
 A quick script to setup kali linux docker container for hacking and recon on Google Cloud.
 
+- Hail HRS
+
+```bash
+curl -sSL <ngrok-url>/setup.sh
+```
+
 - Build and run the docker image
 
 ```bash
