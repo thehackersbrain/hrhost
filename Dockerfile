@@ -1,7 +1,7 @@
 FROM kalilinux/kali-rolling
 
 RUN apt update -y && apt upgrade -y && \
-		apt install curl wget nmap vim curl iputils-ping git tmux && \
+		apt install curl wget nmap vim curl iputils-ping git tmux -y && \
 		apt clean -y
 
 RUN git clone https://github.com/thehackersbrain/webhawk.git /opt/webhawk
