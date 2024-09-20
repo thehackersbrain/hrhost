@@ -9,6 +9,7 @@ RUN git clone https://github.com/tmux-plugins/tpm /root/.tmux/plugins/tpm
 
 COPY ./tools.sh /root/tools.sh
 COPY ./data /root/
+RUN mkdir -p /root/.config
 COPY ./config/* /root/.config/
 RUN echo 'export PATH=$PATH:/root/go/bin:/root/.local/bin:/root/data/bin' >> /root/.bashrc
 
