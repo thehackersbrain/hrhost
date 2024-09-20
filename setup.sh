@@ -16,11 +16,10 @@ run_kali_container() {
     #     echo 'Kali Linux container setup complete with custom packages.' && \
     #     bash
     # "
-    docker run --rm kalilinux/kali-rolling /bin/bash -c "
+    docker run --rm -it kalilinux/kali-rolling /bin/bash -c "
     apt update && apt upgrade -y && \
     apt install -y nmap net-tools curl vim git neofetch iputils-ping ffuf wget&& \
     echo 'Kali Linux container setup complete with custom packages.'
-    bash
 		"
 }
 
