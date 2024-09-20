@@ -6,12 +6,18 @@ A quick script to setup kali linux docker container for hacking and recon on Goo
 ```bash
 git clone https://github.com/thehackersbrain/hrhost.git
 cd hrhost
-docker build -t kali-recon .
-docker run --rm -it kali-recon
+docker build -t hrserver .
+docker run -it hrserver /bin/bash
+```
+
+- Oneliner for start the machine
+
+```bash
+git clone https://github.com/thehackersbrain/hrhost.git && cd hrhost && docker build -t hrserver . && docker run -it hrserver /bin/bash
 ```
 
 - Oneliner for starting the recon
 
 ```bash
-docker run --rm -v $(pwd)/output:/opt/recon-tool/output kali-recon /bin/bash -c "cd /opt/recon-tool && ./run_recon.sh"
+docker run -v $(pwd)/output:/opt/webhawk/output hrserver /bin/bash -c "cd /opt/webhawk && ./run_recon.sh"
 ```
