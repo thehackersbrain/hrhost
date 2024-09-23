@@ -10,16 +10,9 @@ hail_hrs() {
 	docker run -it -v /home/thehackersbrain3/hrhost/recon:/root/recon hrs /bin/bash
 }
 
-help() {
-	echo "Usage: $0 <ngrok-url>"
-}
 
 main() {
-	if [[ $# -eq 2 ]]; then
-		hail_hrs
-	else
-		help
-	fi
+	hail_hrs
 }
 
 main
